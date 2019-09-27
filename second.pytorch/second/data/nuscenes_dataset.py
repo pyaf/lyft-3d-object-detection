@@ -191,8 +191,12 @@ class NuScenesDataset(Dataset):
             },
         }
         lidar_path = Path(info['lidar_path'])
-        points = np.fromfile(
-            str(lidar_path), dtype=np.float32, count=-1).reshape([-1, 5])
+        try:
+            points = np.fromfile(
+                str(lidar_path), dtype=np.float32, count=-1).reshape([-1, 5])
+        except Exception as e:
+            print(e)
+            import pdb; pdb.set_trace()
         points[:, 3] /= 255
         points[:, 4] = 0
         sweep_points_list = [points]

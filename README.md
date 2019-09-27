@@ -78,6 +78,20 @@ first log:
 WORKER 3 seed: 1569564604
 runtime.step=50, runtime.steptime=1.525, runtime.voxel_gene_time=0.03066, runtime.prep_time=0.3198, loss.cls_loss=1.223e+03, loss.cls_loss_rt=362.1, loss.loc_loss=4.409, loss.loc_loss_rt=2.026, loss.loc_elem=[0.1201, 0.07527, 0.3091, 0.1961, 0.1621, 0.07491, 0.07517], loss.cls_pos_rt=323.7, loss.cls_neg_rt=38.32, loss.dir_rt=0.7188, rpn_acc=0.542,  pr.prec@10=0.0006639, pr.rec@10=1.0, pr.prec@30=0.0006639, pr.rec@30=0.9999, pr.prec@50=0.0005329, pr.rec@50=0.3673, pr.prec@70=0.008208, pr.rec@70=0.02797, pr.prec@80=0.009776, pr.rec@80=0.02017, pr.prec@90=0.01083, pr.rec@90=0.01346, pr.prec@95=0.0115, pr.rec@95=0.00999, misc.num_vox=114696, misc.num_pos=175, misc.num_neg=199594, misc.num_anchors=199888, misc.lr=0.0003, mis`
 
+evaluation error at:
+"c8fc41636970378b039615456f91e20082c0ec8e50e9ef1ad86a897b01bb585b"
+
+python /media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/second.pytorch/second/data/nusc_eval.py --root_path="/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/train" --version=v1.0-trainval --eval_version=cvpr_2019 --res_path="/home/ags/second_test/all_fhd/results/step_5865/results_nusc.json" --eval_set=val --output_dir="/home/ags/second_test/all_fhd/results/step_5865"
+
+mAP: 0.1046
+mATE: 0.7509
+mASE: 0.5838
+mAOE: 1.1284
+mAVE: 1.0000
+mAAE: 0.7950
+NDS: 0.1393
+Eval time: 82.3s
+
 
 ## New files/folders
 

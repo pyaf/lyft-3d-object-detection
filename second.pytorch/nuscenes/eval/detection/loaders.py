@@ -48,6 +48,20 @@ def load_gt(nusc, eval_split: str, verbose: bool = False) -> EvalBoxes:
 
     # Only keep samples from this split.
     splits = create_splits_scenes()
+    #import pdb; pdb.set_trace()
+    '''@ags'''
+    import random
+    random.seed(69)
+    names = [s['name'] for s in nusc.scene]
+    # a scene with a sample which has defective lidar file
+    names.remove('host-a011-lidar0-1233090630199206666-1233090655098843996')
+    val_scenes = random.choices(names, k=int(0.2 * len(names)))
+    # doing this because, this scene is taken into account during val set predictions
+    val_scenes.append('host-a011-lidar0-1233090630199206666-1233090655098843996')
+    train_scenes = [s for s in names if s not in val_scenes]
+    splits = {}
+    splits['train'] = train_scenes
+    splits['val'] = val_scenes
 
     # Check compatibility of split with nusc versions
     version = nusc.version
@@ -76,6 +90,8 @@ def load_gt(nusc, eval_split: str, verbose: bool = False) -> EvalBoxes:
         if scene_record['name'] in splits[eval_split]:
             sample_tokens.append(sample_token)
 
+    # @ags: len(sample_tokens): for eval_set: 'val': 4032
+    #import pdb; pdb.set_trace()
     all_annotations = EvalBoxes()
 
     # Load annotations and filter predictions and annotations.
@@ -101,8 +117,10 @@ def load_gt(nusc, eval_split: str, verbose: bool = False) -> EvalBoxes:
             elif attr_count == 1:
                 attribute_name = attribute_map[attr_tokens[0]]
             else:
-                raise Exception('Error: GT annotations must not have more than one attribute!')
-
+                # @ags: level5data may have multiple attribute names
+                attribute_name = attribute_map[attr_tokens[0]]
+                #raise Exception('Error: GT annotations must not have more than one attribute!')
+            #import pdb; pdb.set_trace()
             sample_boxes.append(
                 EvalBox(
                     sample_token=sample_token,

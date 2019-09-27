@@ -18,6 +18,7 @@ def category_to_detection_name(category_name: str) -> Optional[str]:
     :param category_name: Generic nuScenes class.
     :return: nuScenes detection classes.
     """
+    '''
     detection_mapping = {
         'movable_object.barrier': 'barrier',
         'vehicle.bicycle': 'bicycle',
@@ -34,6 +35,19 @@ def category_to_detection_name(category_name: str) -> Optional[str]:
         'vehicle.trailer': 'trailer',
         'vehicle.truck': 'truck'
     }
+    '''
+    detection_mapping = {
+        'car':'car',
+        'pedestrian': 'pedestrian',
+        'animal': 'animal',
+        'other_vehicle': 'other_vehicle',
+        'bus':'bus',
+        'motorcycle':'motorcycle',
+        'truck':'truck',
+        'emergency_vehicle':'emergency_vehicle',
+        'bicycle':'bicycle'
+     }
+
 
     if category_name in detection_mapping:
         return detection_mapping[category_name]

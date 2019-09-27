@@ -292,6 +292,9 @@ def train(config_path,
     amp_optimizer.zero_grad()
     step_times = []
     step = start_step
+
+    #import pdb; pdb.set_trace()
+    print(net.get_global_step() % steps_per_eval)
     try:
         while True:
             if clear_metrics_every_epoch:
@@ -328,7 +331,6 @@ def train(config_path,
                 net_metrics = net.update_metrics(cls_loss_reduced,
                                                  loc_loss_reduced, cls_preds,
                                                  labels, cared)
-
                 step_time = (time.time() - t)
                 step_times.append(step_time)
                 t = time.time()
@@ -377,6 +379,8 @@ def train(config_path,
                     }
                     model_logging.log_metrics(metrics, global_step)
 
+
+                global_step = net.get_global_step()
                 if global_step % steps_per_eval == 0:
                     torchplus.train.save_models(model_dir, [net, amp_optimizer],
                                                 net.get_global_step())
@@ -395,6 +399,7 @@ def train(config_path,
                     net.clear_timer()
                     prog_bar.start((len(eval_dataset) + eval_input_cfg.batch_size - 1)
                                 // eval_input_cfg.batch_size)
+                    ############################################
                     for example in iter(eval_dataloader):
                         example = example_convert_to_torch(example, float_dtype)
                         detections += net(example)
@@ -413,6 +418,7 @@ def train(config_path,
                     with open(result_path_step / "result.pkl", 'wb') as f:
                         pickle.dump(detections, f)
                     net.train()
+                #exit()
                 step += 1
                 if step >= total_step:
                     break
