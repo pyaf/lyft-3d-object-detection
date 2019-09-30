@@ -79,6 +79,10 @@ def read_detection():
     else:
         dt_annos = kitti.get_label_annos(det_path)
     BACKEND.dt_annos = dt_annos
+    token2dt = {}
+    for ann in dt_annos:
+        token2dt[ann['metadata']['token']] = ann
+    BACKEND.token2dt = token2dt
     response = jsonify(results=[response])
     response.headers['Access-Control-Allow-Headers'] = '*'
     return response
@@ -198,6 +202,9 @@ def inference_by_idx():
     # remove_outside = instance["remove_outside"]
     idx = BACKEND.image_idxes.index(image_idx)
     example = BACKEND.dataset[idx]
+    token = example['metadata']['token']
+    dt_ann = BACKEND.token2dt[token]
+    '''
     # don't forget to pad batch idx in coordinates
     example["coordinates"] = np.pad(
         example["coordinates"], ((0, 0), (1, 0)),
@@ -205,21 +212,45 @@ def inference_by_idx():
         constant_values=0)
     # don't forget to add newaxis for anchors
     example["anchors"] = example["anchors"][np.newaxis, ...]
+    
+    # import pdb; pdb.set_trace()
+
     example_torch = example_convert_to_torch(example, device=BACKEND.device)
-    pred = BACKEND.net(example_torch)[0]
-    box3d = pred["box3d_lidar"].detach().cpu().numpy()
+    orgpred = BACKEND.net(example_torch)[0]
+    '''
+    orgpred = dt_ann
+    pred = thresholded_pred(orgpred)
+    box3d = pred["box3d_lidar"]#.detach().cpu().numpy()
     locs = box3d[:, :3]
     dims = box3d[:, 3:6]
     rots = np.concatenate([np.zeros([locs.shape[0], 2], dtype=np.float32), -box3d[:, 6:7]], axis=1)
     response["dt_locs"] = locs.tolist()
     response["dt_dims"] = dims.tolist()
     response["dt_rots"] = rots.tolist()
-    response["dt_labels"] = pred["label_preds"].detach().cpu().numpy().tolist()
-    response["dt_scores"] = pred["scores"].detach().cpu().numpy().tolist()
+    response["dt_labels"] = pred["label_preds"].tolist()#.detach().cpu().numpy().tolist()
+    response["dt_scores"] = pred["scores"].tolist()#.detach().cpu().numpy().tolist()
 
     response = jsonify(results=[response])
     response.headers['Access-Control-Allow-Headers'] = '*'
     return response
+
+
+def thresholded_pred(pred):
+    box3d = pred["box3d_lidar"].detach().cpu().numpy()
+    scores = pred["scores"].detach().cpu().numpy()
+    labels = pred["label_preds"].detach().cpu().numpy()
+    idx = np.where(scores > 0.3)[0]
+    # filter low score ones
+    box3d = box3d[idx, :]
+    # label is one-dim
+    labels = np.take(labels, idx)
+    scores = np.take(scores, idx)
+    pred['box3d_lidar'] = box3d
+    pred['scores'] = scores
+    pred['label_preds'] = labels
+    return pred
+
+
 
 
 def main(port=16666):

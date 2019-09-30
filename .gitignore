@@ -1,4 +1,6 @@
 *.bin
+*.pkl
+*.csv
 *.npy
 *.pyc
 *.zip

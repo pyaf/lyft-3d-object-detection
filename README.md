@@ -18,6 +18,9 @@
 [x] the nuscenes/lyft dataset scema
 [] the KITTI dataset scema
 [] the annotations, understanding them
+[] post process second inference
+[] prediction with sweeps
+[] z-centers for anchor_ranges
 
 ## Ideas:
 
@@ -56,9 +59,13 @@ Okay, so for key_frame=True, sample_data timestamps is very close to sample time
 * Add numba paths and second directory to pythonpath in bashrc
 * python create_data.py nuscenes_data_prep --root_path=../../data/nuscenes/v1.0-mini  --version="v1.0-mini" --dataset_name="NuScenesDataset" --max_sweeps=10
 * python create_data.py nuscenes_data_prep --root_path=../../data/lyft/train/  --version="v1.0-trainval" --dataset_name="NuScenesDataset" --max_sweeps=10
+* python create_data.py nuscenes_data_prep --root_path=../../data/lyft/test/  --version="v1.0-test" --dataset_name="NuScenesDataset" --max_sweeps=10
 * there's a concept of velocity in nuscenes, but not  in lyft.
 
-python ./pytorch/train.py train --config_path=./configs/nuscenes/all.fhd.config --model_dir=/home/ags/second_test/all_fhd/
+python -W ignore ./pytorch/train.py train --config_path=./configs/nuscenes/all.fhd.config --model_dir=/home/ags/second_test/all_fhd/
+
+spconv issue on compute-01
+https://github.com/traveller59/spconv/issues/78
 
 * Installing nuscenes devkit 1.0.1
 * create_data logs for lyft:
@@ -92,6 +99,7 @@ mAAE: 0.7950
 NDS: 0.1393
 Eval time: 82.3s
 
+quaternion, to be watched: https://www.youtube.com/watch?v=q-ESzg03mQc
 
 ## New files/folders
 
@@ -245,6 +253,7 @@ ego_pose:
         "rotation":                <float> [4] -- Coordinate system orientation as quaternion: w, x, y, z.
     * the transformation you need to make in order to bring a point in global coordinate to ego vehicle's frame of reference.
 
+*question*, is ego_pose_token for all sensors on a ego vehicle same? technically it should be.
 sensor_calibration:
     * schema
        "translation":             <float> [3] -- Coordinate system origin in meters: x, y, z.
@@ -252,3 +261,19 @@ sensor_calibration:
        "camera_intrinsic":        <float> [3, 3] -- Intrinsic camera calibration. Empty for sensors that are not
 
     * the tranformation you need to make in order to bring a point in ego vehicle's frame of reference to sensor's frame of reference.
+    *
+sample_annotation
+
+   "translation":             <float> [3] -- Bounding box location in meters as center_x, center_y, center_z.
+   "size":                    <float> [3] -- Bounding box size in meters as width, length, height.
+   "rotation":                <float> [4] -- Bounding box orientation as quaternion: w, x, y, z.
+
+kittiviewer:
+/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/test/infos_test.pkl
+/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/test/
+
+
+/home/ags/second_test/all_fhd/results/step_29325/result.pkl
+/home/ags/second_test/all_fhd/voxelnet-29369.tckpt
+
+/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/second.pytorch/second/configs/nuscenes/all.fhd.config

@@ -281,6 +281,7 @@ def train(config_path,
     # TRAINING
     ######################
     model_logging = SimpleModelLog(model_dir)
+    import pdb; pdb.set_trace()
     model_logging.open()
     model_logging.log_text(proto_str + "\n", 0, tag="config")
     start_step = net.get_global_step()

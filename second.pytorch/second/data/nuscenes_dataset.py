@@ -777,7 +777,9 @@ def create_nuscenes_infos(root_path, version="v1.0-trainval", max_sweeps=10):
         #import pdb; pdb.set_trace()
 
     elif version == "v1.0-test":
-        train_scenes = splits.test
+        '''@ags'''
+        train_scenes = [s['name'] for s in nusc.scene]
+        #train_scenes = splits.test
         val_scenes = []
     elif version == "v1.0-mini":
         train_scenes = splits.mini_train
