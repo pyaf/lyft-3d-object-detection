@@ -9,6 +9,11 @@
 ## Notes:
 
 
+## TODO:
+
+[] apex support
+[] prediction with sweeps
+[] understanding the evaluation metric
 
 
 
@@ -16,11 +21,10 @@
 
 [x] the nuscenes/lyft sdk
 [x] the nuscenes/lyft dataset scema
-[] the KITTI dataset scema
-[] the annotations, understanding them
-[] post process second inference
-[] prediction with sweeps
-[] z-centers for anchor_ranges
+[x] the KITTI dataset scema
+[x] the annotations, understanding them
+[x] post process second inference
+[x] z-centers for anchor_ranges
 
 ## Ideas:
 
@@ -57,9 +61,12 @@ Okay, so for key_frame=True, sample_data timestamps is very close to sample time
 * sudo apt install libsparsehash-dev
 * install spconv, follow each instructions download boost headers
 * Add numba paths and second directory to pythonpath in bashrc
+
+*NOTE* pass full path for root_path etc, it's being saved in the pickle
 * python create_data.py nuscenes_data_prep --root_path=../../data/nuscenes/v1.0-mini  --version="v1.0-mini" --dataset_name="NuScenesDataset" --max_sweeps=10
-* python create_data.py nuscenes_data_prep --root_path=../../data/lyft/train/  --version="v1.0-trainval" --dataset_name="NuScenesDataset" --max_sweeps=10
-* python create_data.py nuscenes_data_prep --root_path=../../data/lyft/test/  --version="v1.0-test" --dataset_name="NuScenesDataset" --max_sweeps=10
+* python create_data.py nuscenes_data_prep --root_path=/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/train/  --version="v1.0-trainval" --dataset_name="NuScenesDataset" --max_sweeps=10
+* python create_data.py nuscenes_data_prep --root_path=/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/test/  --version="v1.0-test" --dataset_name="NuScenesDataset" --max_sweeps=10
+
 * there's a concept of velocity in nuscenes, but not  in lyft.
 
 python -W ignore ./pytorch/train.py train --config_path=./configs/nuscenes/all.fhd.config --model_dir=/home/ags/second_test/all_fhd/
@@ -90,6 +97,8 @@ evaluation error at:
 
 python /media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/second.pytorch/second/data/nusc_eval.py --root_path="/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/train" --version=v1.0-trainval --eval_version=cvpr_2019 --res_path="/home/ags/second_test/all_fhd/results/step_5865/results_nusc.json" --eval_set=val --output_dir="/home/ags/second_test/all_fhd/results/step_5865"
 
+
+
 mAP: 0.1046
 mATE: 0.7509
 mASE: 0.5838
@@ -100,6 +109,32 @@ NDS: 0.1393
 Eval time: 82.3s
 
 quaternion, to be watched: https://www.youtube.com/watch?v=q-ESzg03mQc
+
+
+
+
+
+
+ Conclusion
+
+* The `results.pkl` generated during training are more or less same as predictions made by this kernel
+* my pred boxes to Box conversion code is perfect :D, because gt_boxes matches with lyft.get_boxes()
+
+ What next?
+* analyze your submission script for val set, -> there's some bug when translating the boxes to global frame, their lidar frame looks good.
+
+the results_nusc.json contains val set predictions for all the sample_tokens, with boxes in global FoR
+
+
+
+
+
+
+
+
+
+
+
 
 ## New files/folders
 
@@ -269,6 +304,8 @@ sample_annotation
    "rotation":                <float> [4] -- Bounding box orientation as quaternion: w, x, y, z.
 
 kittiviewer:
+
+NuScenesDataset
 /media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/test/infos_test.pkl
 /media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/test/
 

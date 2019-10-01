@@ -295,7 +295,7 @@ def train(config_path,
     step = start_step
 
     #import pdb; pdb.set_trace()
-    print(net.get_global_step() % steps_per_eval)
+    #print(net.get_global_step() % steps_per_eval)
     try:
         while True:
             if clear_metrics_every_epoch:
@@ -473,8 +473,8 @@ def evaluate(config_path,
     model_cfg = config.model.second
     train_cfg = config.train_config
 
-    import pdb; pdb.set_trace()
-    model_cfg.rpn.layer_nums[:] = [2] ## @ags
+    #import pdb; pdb.set_trace()
+    #model_cfg.rpn.layer_nums[:] = [2] ## @ags
 
     net = build_network(model_cfg, measure_time=measure_time).to(device)
     if train_cfg.enable_mixed_precision:

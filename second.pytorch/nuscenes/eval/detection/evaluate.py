@@ -79,11 +79,11 @@ class NuScenesEval:
         assert set(self.pred_boxes.sample_tokens) == set(self.gt_boxes.sample_tokens), \
             "Samples in split doesn't match samples in predictions."
 
-        # Add center distances.
+        # Add center distances. adds box.ego_dist -> dist of box's center from ego vehicle
         self.pred_boxes = add_center_dist(nusc, self.pred_boxes)
         self.gt_boxes = add_center_dist(nusc, self.gt_boxes)
 
-        # Filter boxes (distance, points per box, etc.).
+        # Filter boxes (distance, points per box, etc.) based on box.ego_dist
         if verbose:
             print('Filtering predictions')
         self.pred_boxes = filter_eval_boxes(nusc, self.pred_boxes, self.cfg.class_range, verbose=verbose)

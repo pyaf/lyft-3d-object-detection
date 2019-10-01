@@ -54,10 +54,10 @@ def load_gt(nusc, eval_split: str, verbose: bool = False) -> EvalBoxes:
     random.seed(69)
     names = [s['name'] for s in nusc.scene]
     # a scene with a sample which has defective lidar file
-    names.remove('host-a011-lidar0-1233090630199206666-1233090655098843996')
+    #names.remove('host-a011-lidar0-1233090630199206666-1233090655098843996')
     val_scenes = random.choices(names, k=int(0.2 * len(names)))
     # doing this because, this scene is taken into account during val set predictions
-    val_scenes.append('host-a011-lidar0-1233090630199206666-1233090655098843996')
+    #val_scenes.append('host-a011-lidar0-1233090630199206666-1233090655098843996')
     train_scenes = [s for s in names if s not in val_scenes]
     splits = {}
     splits['train'] = train_scenes

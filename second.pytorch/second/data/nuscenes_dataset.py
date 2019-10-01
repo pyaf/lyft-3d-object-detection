@@ -85,6 +85,7 @@ class NuScenesDataset(Dataset):
         self._root_path = Path(root_path)
         with open(info_path, 'rb') as f:
             data = pickle.load(f)
+        #import pdb; pdb.set_trace()
         self._nusc_infos = data["infos"]
         self._nusc_infos = list(
             sorted(self._nusc_infos, key=lambda e: e["timestamp"]))
@@ -352,6 +353,7 @@ class NuScenesDataset(Dataset):
             token2info[info["token"]] = info
         for det in detections:
             annos = []
+            ##### ...
             boxes = _second_det_to_nusc_box(det)
             for i, box in enumerate(boxes):
                 name = mapped_class_names[box.label]
@@ -359,6 +361,7 @@ class NuScenesDataset(Dataset):
                 if len(token2info[det["metadata"]["token"]]["sweeps"]) == 0:
                     velocity = (np.nan, np.nan)
                 box.velocity = np.array([*velocity, 0.0])
+            ##### ...
             boxes = _lidar_nusc_box_to_global(
                 token2info[det["metadata"]["token"]], boxes,
                 mapped_class_names, "cvpr_2019")
@@ -770,7 +773,7 @@ def create_nuscenes_infos(root_path, version="v1.0-trainval", max_sweeps=10):
         random.seed(69)
         names = [s['name'] for s in nusc.scene]
         # a scene with a sample which has defective lidar file
-        names.remove('host-a011-lidar0-1233090630199206666-1233090655098843996')
+        #names.remove('host-a011-lidar0-1233090630199206666-1233090655098843996')
         val_scenes = random.choices(names, k=int(0.2 * len(names)))
         train_scenes = [s for s in names if s not in val_scenes]
 
