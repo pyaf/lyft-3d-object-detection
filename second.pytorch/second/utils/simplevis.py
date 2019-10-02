@@ -79,10 +79,10 @@ def points_to_bev(points,
             format: xyzxyz, minmax
         with_reflectivity: bool. if True, will add a intensity map to bev map.
     Returns:
-        bev_map: [num_height_maps + 1(2), H, W] float tensor. 
-            `WARNING`: bev_map[-1] is num_points map, NOT density map, 
-            because calculate density map need more time in cpu rather than gpu. 
-            if with_reflectivity is True, bev_map[-2] is intensity map. 
+        bev_map: [num_height_maps + 1(2), H, W] float tensor.
+            `WARNING`: bev_map[-1] is num_points map, NOT density map,
+            because calculate density map need more time in cpu rather than gpu.
+            if with_reflectivity is True, bev_map[-2] is intensity map.
     """
     if not isinstance(voxel_size, np.ndarray):
         voxel_size = np.array(voxel_size, dtype=points.dtype)
@@ -160,7 +160,7 @@ def draw_box_in_bev(img,
     # coors_range: array([-50, -30,  -3,  50,  30,   1])
     # boxes: N, 7: x,y,z,w,l,h,theta
 
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     coors_range = np.array(coors_range)
     bev_corners = box_np_ops.center_to_corner_box2d(
         boxes[:, [0, 1]], boxes[:, [3, 4]], boxes[:, 6])

@@ -23,6 +23,13 @@ from second.pytorch.builder import (box_coder_builder, input_reader_builder,
 from second.utils.log_tool import SimpleModelLog
 from second.utils.progress_bar import ProgressBar
 import psutil
+import warnings
+warnings.filterwarnings("ignore")
+
+def fix_bn(m):
+    classname = m.__class__.__name__
+    if classname.find('BatchNorm') != -1:
+        m.eval().half()
 
 def example_convert_to_torch(example, dtype=torch.float32,
                              device=None) -> dict:
@@ -177,10 +184,6 @@ def train(config_path,
     train_cfg = config.train_config
 
     net = build_network(model_cfg, measure_time).to(device)
-    # if train_cfg.enable_mixed_precision:
-    #     net.half()
-    #     net.metrics_to_float()
-    #     net.convert_norm_to_float(net)
     target_assigner = net.target_assigner
     voxel_generator = net.voxel_generator
     print("num parameters:", len(list(net.parameters())))
@@ -202,9 +205,9 @@ def train(config_path,
         net.clear_global_step()
         net.clear_metrics()
     if multi_gpu:
-        net_parallel = torch.nn.DataParallel(net)
-    else:
-        net_parallel = net
+        net = torch.nn.DataParallel(net)
+    #else:
+    #    net_parallel = net
     optimizer_cfg = train_cfg.optimizer
     loss_scale = train_cfg.loss_scale_factor
     fastai_optimizer = optimizer_builder.build(
@@ -281,7 +284,7 @@ def train(config_path,
     # TRAINING
     ######################
     model_logging = SimpleModelLog(model_dir)
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     model_logging.open()
     model_logging.log_text(proto_str + "\n", 0, tag="config")
     start_step = net.get_global_step()
@@ -308,7 +311,7 @@ def train(config_path,
 
                 batch_size = example["anchors"].shape[0]
 
-                ret_dict = net_parallel(example_torch)
+                ret_dict = net(example_torch)
                 cls_preds = ret_dict["cls_preds"]
                 loss = ret_dict["loss"].mean()
                 cls_loss_reduced = ret_dict["cls_loss_reduced"].mean()
@@ -345,6 +348,7 @@ def train(config_path,
                 global_step = net.get_global_step()
 
                 if global_step % display_step == 0:
+                    print()
                     if measure_time:
                         for name, val in net.get_avg_time_dict().items():
                             print(f"avg {name} time = {val * 1000:.3f} ms")
@@ -403,7 +407,12 @@ def train(config_path,
                     ############################################
                     for example in iter(eval_dataloader):
                         example = example_convert_to_torch(example, float_dtype)
-                        detections += net(example)
+                        #import pdb; pdb.set_trace()
+                        try:
+                            detections += net(example)
+                        except Exception as e:
+                            print(e)
+                            import pdb; pdb.set_trace()
                         prog_bar.print_bar()
 
                     sec_per_ex = len(eval_dataset) / (time.time() - t)
@@ -425,8 +434,14 @@ def train(config_path,
                     break
             if step >= total_step:
                 break
+    except KeyboardInterrupt:
+        print("Shutdown requested...exiting")
+        torchplus.train.save_models(model_dir, [net, amp_optimizer],
+                                net.get_global_step())
+
+
     except Exception as e:
-        print(json.dumps(example["metadata"], indent=2))
+        #print(json.dumps(example["metadata"], indent=2))
         model_logging.log_text(str(e), step)
         model_logging.log_text(json.dumps(example["metadata"], indent=2), step)
         torchplus.train.save_models(model_dir, [net, amp_optimizer],

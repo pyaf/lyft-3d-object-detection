@@ -285,10 +285,10 @@ def prep_pointcloud(input_dict,
         gt_dict["gt_boxes"][:, 6] = box_np_ops.limit_period(
             gt_dict["gt_boxes"][:, 6], offset=0.5, period=2 * np.pi)
 
-        # boxes_lidar = gt_dict["gt_boxes"]
-        # bev_map = simplevis.nuscene_vis(points, boxes_lidar)
-        # cv2.imshow('post-noise', bev_map)
-        # cv2.waitKey(0)
+        #boxes_lidar = gt_dict["gt_boxes"]
+        #bev_map = simplevis.nuscene_vis(points, boxes_lidar)
+        #cv2.imshow('post-noise', bev_map)
+        #cv2.waitKey(0)
     if shuffle_points:
         # shuffle is a little slow.
         np.random.shuffle(points)
@@ -374,8 +374,7 @@ def prep_pointcloud(input_dict,
             matched_thresholds=matched_thresholds,
             unmatched_thresholds=unmatched_thresholds,
             importance=gt_dict["gt_importance"])
-
-        """
+        '''
         boxes_lidar = gt_dict["gt_boxes"]
         bev_map = simplevis.nuscene_vis(points, boxes_lidar, gt_dict["gt_names"])
         assigned_anchors = anchors[targets_dict['labels'] > 0]
@@ -391,15 +390,15 @@ def prep_pointcloud(input_dict,
         voxels_min = np.min(voxels[:, :, 2], axis=1, keepdims=False)
         voxels_height = voxels_max - voxels_min
         voxels_height = np.minimum(voxels_height, 4)
-        # sns.distplot(voxels_height)
-        # plt.show()
+        #sns.distplot(voxels_height)
+        #plt.show()
         pp_map[coordinates[:, 1], coordinates[:, 2]] = voxels_height / 4
         pp_map = (pp_map * 255).astype(np.uint8)
         pp_map = cv2.cvtColor(pp_map, cv2.COLOR_GRAY2RGB)
         pp_map = simplevis.draw_box_in_bev(pp_map, [-50, -50, 3, 50, 50, 1], boxes_lidar, [128, 0, 128], 1)
         cv2.imshow('heights', pp_map)
         cv2.waitKey(0)
-        """
+        '''
         example.update({
             'labels': targets_dict['labels'],
             'reg_targets': targets_dict['bbox_targets'],
