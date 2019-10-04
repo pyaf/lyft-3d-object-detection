@@ -96,7 +96,7 @@ model: {
         nms_pre_max_size: 1000
         nms_post_max_size: 300
         nms_score_threshold: 0.05
-        nms_iou_threshold: 0.5
+        nms_iou_threshold: 0.3
         region_similarity_calculator: {
           nearest_iou_similarity: {}
         }
@@ -116,7 +116,7 @@ model: {
         nms_pre_max_size: 1000
         nms_post_max_size: 300
         nms_score_threshold: 0.05
-        nms_iou_threshold: 0.5
+        nms_iou_threshold: 0.3
         region_similarity_calculator: {
           nearest_iou_similarity: {}
         }
@@ -136,7 +136,7 @@ model: {
         nms_pre_max_size: 1000
         nms_post_max_size: 300
         nms_score_threshold: 0.05
-        nms_iou_threshold: 0.5
+        nms_iou_threshold: 0.3
         region_similarity_calculator: {
           nearest_iou_similarity: {}
         }
@@ -149,14 +149,14 @@ model: {
           rotations: [0, 1.57] # DON'T modify this unless you are very familiar with my code.
           # custom_values: [0, 0] # velocity vector base value
         }
-        matched_threshold : 0.5
-        unmatched_threshold : 0.35
+        matched_threshold : 0.3
+        unmatched_threshold : 0.15
         use_rotate_nms: false
         use_multi_class_nms: false
         nms_pre_max_size: 1000
         nms_post_max_size: 300
         nms_score_threshold: 0.05
-        nms_iou_threshold: 0.5
+        nms_iou_threshold: 0.3
         region_similarity_calculator: {
           nearest_iou_similarity: {}
         }
@@ -176,7 +176,7 @@ model: {
         nms_pre_max_size: 1000
         nms_post_max_size: 300
         nms_score_threshold: 0.05
-        nms_iou_threshold: 0.5
+        nms_iou_threshold: 0.3
         region_similarity_calculator: {
           nearest_iou_similarity: {}
         }
@@ -197,7 +197,7 @@ model: {
         nms_pre_max_size: 1000
         nms_post_max_size: 300
         nms_score_threshold: 0.05
-        nms_iou_threshold: 0.5
+        nms_iou_threshold: 0.3
         region_similarity_calculator: {
           nearest_iou_similarity: {}
         }
@@ -217,7 +217,7 @@ model: {
         nms_pre_max_size: 1000
         nms_post_max_size: 300
         nms_score_threshold: 0.05
-        nms_iou_threshold: 0.5
+        nms_iou_threshold: 0.3
         region_similarity_calculator: {
           nearest_iou_similarity: {}
         }
@@ -237,7 +237,7 @@ model: {
         nms_pre_max_size: 1000
         nms_post_max_size: 300
         nms_score_threshold: 0.05
-        nms_iou_threshold: 0.5
+        nms_iou_threshold: 0.3
         region_similarity_calculator: {
           distance_similarity: {
             distance_norm: 1.414 # match range
@@ -254,14 +254,14 @@ model: {
           rotations: [0, 1.57] # DON'T modify this unless you are very familiar with my code.
           # custom_values: [0, 0] # velocity vector base value
         }
-        matched_threshold : 0.5
-        unmatched_threshold : 0.35
+        matched_threshold : 0.3
+        unmatched_threshold : 0.15
         use_rotate_nms: false
         use_multi_class_nms: false
         nms_pre_max_size: 1000
         nms_post_max_size: 300
         nms_score_threshold: 0.05
-        nms_iou_threshold: 0.5
+        nms_iou_threshold: 0.3
         region_similarity_calculator: {
           nearest_iou_similarity: {}
         }
@@ -303,6 +303,17 @@ train_input_reader: {
     random_flip_y: true
     remove_environment: false
     database_sampler {
+
+      database_info_path: "/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/train/kitti_dbinfos_train.pkl"
+      sample_groups {
+        name_to_max_num {
+          key: "bus"
+          value: 4
+        }
+      }
+      global_random_rotation_range_per_object: [0, 0]
+      rate: 1.0
+
     }
   }
 }
@@ -323,7 +334,7 @@ train_config: {
     fixed_weight_decay: true
     use_moving_average: false
   }
-  steps: 58650 # 14065 * 20 (28130 // 2 )
+  steps: 98650 # 14065 * 20 (28130 // 2 )
   steps_per_eval: 3000 # 14065 * 2
   save_checkpoints_secs : 1800 # half hour
   save_summary_steps : 10

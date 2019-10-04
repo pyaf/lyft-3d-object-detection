@@ -18,6 +18,7 @@ def nuscenes_data_prep(root_path, version, dataset_name, max_sweeps=10):
     name = "infos_train.pkl"
     if version == "v1.0-test":
         name = "infos_test.pkl"
+    return
     create_groundtruth_database(dataset_name, root_path, Path(root_path) / name)
 
 if __name__ == '__main__':

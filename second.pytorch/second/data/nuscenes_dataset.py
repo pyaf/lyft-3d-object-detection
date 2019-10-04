@@ -338,6 +338,54 @@ class NuScenesDataset(Dataset):
         }
 
     def evaluation_nusc(self, detections, output_dir):
+        #import pdb; pdb.set_trace()
+        version = self.version
+        eval_set_map = {
+            "v1.0-mini": "mini_val", ## @ags, train->val
+            "v1.0-trainval": "val",
+        }
+        #gt_annos = self.ground_truth_annotations
+        #if gt_annos is None:
+        #    return None
+        nusc_annos = {}
+        mapped_class_names = self._class_names
+        token2info = {}
+        for info in self._nusc_infos:
+            token2info[info["token"]] = info
+        annos = []
+        for det in detections:
+            #break
+            boxes = _second_det_to_nusc_box(det)
+            boxes = _lidar_nusc_box_to_global(
+                token2info[det["metadata"]["token"]], boxes,
+                mapped_class_names, "cvpr_2019")
+            for i, box in enumerate(boxes):
+                name = mapped_class_names[box.label]
+                nusc_anno = {
+                    "sample_token": det["metadata"]["token"],
+                    "translation": box.center.tolist(),
+                    "size": box.wlh.tolist(),
+                    "rotation": box.orientation.elements.tolist(),
+                    "name": name,
+                    "score": box.score,
+                }
+                annos.append(nusc_anno)
+        eval_set = eval_set_map[self.version]
+        pred_file_path = Path(output_dir) / f"pred_data_{eval_set}.json"
+        with open(pred_file_path, "w") as f:
+            json.dump(annos, f)
+        gt_file_path = self._root_path / f'gt_data_{eval_set}.json'
+        eval_main_file = Path(__file__).resolve().parent / "nusc_eval.py"
+        # why add \"{}\"? to support path with spaces.
+        cmd = f"python {str(eval_main_file)}"
+        cmd += f" --gt_file_path=\"{str(gt_file_path)}\""
+        cmd += f" --pred_file_path=\"{str(pred_file_path)}\""
+        cmd += f" --output_dir=\"{output_dir}\""
+        # use subprocess can release all nusc memory after evaluation
+        subprocess.check_output(cmd, shell=True)
+
+
+    def evaluation_nusc_old(self, detections, output_dir):
         version = self.version
         eval_set_map = {
             "v1.0-mini": "mini_val", ## @ags, train->val
@@ -438,6 +486,8 @@ class NuScenesDataset(Dataset):
         """
         # res_kitti = self.evaluation_kitti(detections, output_dir)
         res_nusc = self.evaluation_nusc(detections, output_dir)
+        return
+        '''
         res = {
             "results": {
                 "nusc": res_nusc["results"]["nusc"],
@@ -453,6 +503,7 @@ class NuScenesDataset(Dataset):
             },
         }
         return res
+        '''
 
 
 @register_dataset
@@ -776,7 +827,9 @@ def create_nuscenes_infos(root_path, version="v1.0-trainval", max_sweeps=10):
         #names.remove('host-a011-lidar0-1233090630199206666-1233090655098843996')
         val_scenes = random.choices(names, k=int(0.2 * len(names)))
         train_scenes = [s for s in names if s not in val_scenes]
-
+        name = 'host-a004-lidar0-1232905117299287546-1232905142198246226'
+        train_scenes.remove(name)
+        val_scenes.append(name)
         #import pdb; pdb.set_trace()
 
     elif version == "v1.0-test":

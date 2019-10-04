@@ -297,7 +297,6 @@ def train(config_path,
     step_times = []
     step = start_step
 
-    #import pdb; pdb.set_trace()
     #print(net.get_global_step() % steps_per_eval)
     try:
         while True:
@@ -386,7 +385,7 @@ def train(config_path,
 
 
                 global_step = net.get_global_step()
-                if global_step % steps_per_eval == 0:
+                if global_step % steps_per_eval == 0:# or True:
                     torchplus.train.save_models(model_dir, [net, amp_optimizer],
                                                 net.get_global_step())
                     net.eval()
@@ -406,6 +405,7 @@ def train(config_path,
                                 // eval_input_cfg.batch_size)
                     ############################################
                     for example in iter(eval_dataloader):
+                        #break
                         example = example_convert_to_torch(example, float_dtype)
                         #import pdb; pdb.set_trace()
                         try:
@@ -415,18 +415,25 @@ def train(config_path,
                             import pdb; pdb.set_trace()
                         prog_bar.print_bar()
 
-                    sec_per_ex = len(eval_dataset) / (time.time() - t)
-                    model_logging.log_text(
-                        f'generate label finished({sec_per_ex:.2f}/s). start eval:',
-                        global_step)
+                    #sec_per_ex = len(eval_dataset) / (time.time() - t)
+                    #model_logging.log_text(
+                    #    f'generate label finished({sec_per_ex:.2f}/s). start eval:',
+                    #    global_step)
                     result_dict = eval_dataset.dataset.evaluation(
                         detections, str(result_path_step))
-                    for k, v in result_dict["results"].items():
-                        model_logging.log_text("Evaluation {}".format(k), global_step)
-                        model_logging.log_text(v, global_step)
-                    model_logging.log_metrics(result_dict["detail"], global_step)
-                    with open(result_path_step / "result.pkl", 'wb') as f:
-                        pickle.dump(detections, f)
+                    #k, v in result_dict["results"].items():
+                    #    model_logging.log_text("Evaluation {}".format(k), global_step)
+                    #    model_logging.log_text(v, global_step)
+                    #model_logging.log_metrics(result_dict["detail"], global_step)
+                    summary_path = result_path_step / 'metric_summary.json'
+                    with open(str(summary_path), 'r') as f:
+                        summary = json.load(f)
+                    #import pdb; pdb.set_trace()
+                    for th, ap_metric in summary.items():
+                        model_logging.log_text(f'\nthreshold: {th}', global_step)
+                        model_logging.log_text(f'{json.dumps(ap_metric, indent=2)}', global_step)
+                    #with open(result_path_step / "result.pkl", 'wb') as f:
+                    #    pickle.dump(detections, f)
                     net.train()
                 #exit()
                 step += 1
