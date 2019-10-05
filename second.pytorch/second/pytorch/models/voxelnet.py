@@ -648,7 +648,7 @@ class VoxelNet(nn.Module):
 
     def metrics_to_float(self):
         self.rpn_acc.float()
-        self.rpn_metrics.float()
+        #self.rpn_metrics.float()
         self.rpn_cls_loss.float()
         self.rpn_loc_loss.float()
         self.rpn_total_loss.float()
@@ -660,9 +660,9 @@ class VoxelNet(nn.Module):
             num_class += 1
         cls_preds = cls_preds.view(batch_size, -1, num_class)
         rpn_acc = self.rpn_acc(labels, cls_preds, sampled).numpy()[0]
-        prec, recall = self.rpn_metrics(labels, cls_preds, sampled)
-        prec = prec.numpy()
-        recall = recall.numpy()
+        #prec, recall = self.rpn_metrics(labels, cls_preds, sampled)
+        #prec = prec.numpy()
+        #recall = recall.numpy()
         rpn_cls_loss = self.rpn_cls_loss(cls_loss).numpy()[0]
         rpn_loc_loss = self.rpn_loc_loss(loc_loss).numpy()[0]
         ret = {
@@ -673,16 +673,16 @@ class VoxelNet(nn.Module):
                 "loc_loss_rt": float(loc_loss.data.cpu().numpy()),
             },
             "rpn_acc": float(rpn_acc),
-            "pr": {},
+            #"pr": {},
         }
-        for i, thresh in enumerate(self.rpn_metrics.thresholds):
-            ret["pr"][f"prec@{int(thresh*100)}"] = float(prec[i])
-            ret["pr"][f"rec@{int(thresh*100)}"] = float(recall[i])
+        #for i, thresh in enumerate(self.rpn_metrics.thresholds):
+        #    ret["pr"][f"prec@{int(thresh*100)}"] = float(prec[i])
+        #    ret["pr"][f"rec@{int(thresh*100)}"] = float(recall[i])
         return ret
 
     def clear_metrics(self):
         self.rpn_acc.clear()
-        self.rpn_metrics.clear()
+        #self.rpn_metrics.clear()
         self.rpn_cls_loss.clear()
         self.rpn_loc_loss.clear()
         self.rpn_total_loss.clear()

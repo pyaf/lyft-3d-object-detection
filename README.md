@@ -4,7 +4,8 @@
 ## Approaches and Experiments:
 
 1. Run PointRCNN on nuscenes-mini, converted to kiiti.
-2. Run SECOND on nuscenes-mini,
+2. Run SECOND on nuscenes-mini: DONE
+3. Run SECOND on lyft. DONE
 
 ## Notes:
 
@@ -12,12 +13,12 @@
 ## TODO:
 
 [x] apex support: it was useless warning, suppressed it. Now I can train at bs:8
-[] mAP metric computation in eval.
+[x] mAP metric computation in eval.
 [] prediction with sweeps
 [] with pretrained models? hmm, looks like it's working after 100 iters
 [x] understanding the evaluation metric
-[] filter too-close predictions
-[] good train/val split
+[x] filter too-close predictions
+[x] good train/val split
 
 
 
@@ -34,6 +35,7 @@ https://github.com/traveller59/second.pytorch/issues/226
 [x] the annotations, understanding them
 [x] post process second inference
 [x] z-centers for anchor_ranges
+[] multi-sweep predictions
 
 ## Ideas:
 
@@ -62,21 +64,22 @@ Okay, so for key_frame=True, sample_data timestamps is very close to sample time
     * ego_pose is car's coord params wrt to global cood system.
     * As the data is recorded w.r.t sensor's frame, we need to transform annotations to car's frame using caliberated sensor parameters, then to global frame using ego_pose paramters.
 * The lidar pointcloud is defined in the sensor's reference frame.
-*
+* Boxes are in global frame.
+
+
 
 
 ## second.pytorch
-* `secondenv` for second code. python 3.7
+
 * sudo apt install libsparsehash-dev
 * install spconv, follow each instructions download boost headers
-* Add numba paths and second directory to pythonpath in bashrc
 
 *NOTE* pass full path for root_path etc, it's being saved in the pickle
 * python create_data.py nuscenes_data_prep --root_path=../../data/nuscenes/v1.0-mini  --version="v1.0-mini" --dataset_name="NuScenesDataset" --max_sweeps=10
 * python create_data.py nuscenes_data_prep --root_path=/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/train/  --version="v1.0-trainval" --dataset_name="NuScenesDataset" --max_sweeps=10
 * python create_data.py nuscenes_data_prep --root_path=/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/test/  --version="v1.0-test" --dataset_name="NuScenesDataset" --max_sweeps=10
 
-* there's a concept of velocity in nuscenes, but not  in lyft.
+* there's a concept of velocity in nuscenes, but not in lyft.
 
 python -W ignore ./pytorch/train.py train --config_path=./configs/nuscenes/all.fhd.config --model_dir=/home/ags/second_test/all_fhd/
 python -W ignore ./pytorch/train.py train --config_path=./configs/nuscenes/all.fhd.config --model_dir=/home/ags/second_test/test/
@@ -85,60 +88,27 @@ spconv issue on compute-01
 https://github.com/traveller59/spconv/issues/78
 
 * Installing nuscenes devkit 1.0.1
-* create_data logs for lyft:
-    total scene num: 180
-    exist scene num: 180
-    train scene: 147, val scene: 32
-    [100.0%][===================>][87.66it/s][04:37>00:00]
-    train sample: 18522, val sample: 4158
-    [100.0%][===================>][1.87it/s][01:30:40>00:00]
-    load 434347 car database infos
-    load 11411 truck database infos
-    load 21476 pedestrian database infos
-    load 18061 bicycle database infos
-    load 652 motor`
-
-first log:
-WORKER 3 seed: 1569564604
-runtime.step=50, runtime.steptime=1.525, runtime.voxel_gene_time=0.03066, runtime.prep_time=0.3198, loss.cls_loss=1.223e+03, loss.cls_loss_rt=362.1, loss.loc_loss=4.409, loss.loc_loss_rt=2.026, loss.loc_elem=[0.1201, 0.07527, 0.3091, 0.1961, 0.1621, 0.07491, 0.07517], loss.cls_pos_rt=323.7, loss.cls_neg_rt=38.32, loss.dir_rt=0.7188, rpn_acc=0.542,  pr.prec@10=0.0006639, pr.rec@10=1.0, pr.prec@30=0.0006639, pr.rec@30=0.9999, pr.prec@50=0.0005329, pr.rec@50=0.3673, pr.prec@70=0.008208, pr.rec@70=0.02797, pr.prec@80=0.009776, pr.rec@80=0.02017, pr.prec@90=0.01083, pr.rec@90=0.01346, pr.prec@95=0.0115, pr.rec@95=0.00999, misc.num_vox=114696, misc.num_pos=175, misc.num_neg=199594, misc.num_anchors=199888, misc.lr=0.0003, mis`
-
-evaluation error at:
-"c8fc41636970378b039615456f91e20082c0ec8e50e9ef1ad86a897b01bb585b"
-
-python /media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/second.pytorch/second/data/nusc_eval.py --root_path="/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/train" --version=v1.0-trainval --eval_version=cvpr_2019 --res_path="/home/ags/second_test/all_fhd/results/step_5865/results_nusc.json" --eval_set=val --output_dir="/home/ags/second_test/all_fhd/results/step_5865"
-
-
-
-mAP: 0.1046
-mATE: 0.7509
-mASE: 0.5838
-mAOE: 1.1284
-mAVE: 1.0000
-mAAE: 0.7950
-NDS: 0.1393
-Eval time: 82.3s
-
-quaternion, to be watched: https://www.youtube.com/watch?v=q-ESzg03mQc
+* quaternion, to be watched: https://www.youtube.com/watch?v=q-ESzg03mQc
 
 
 ### distribution of train set:
 
-animal    n=  186, width= 0.36±0.12, len= 0.73±0.19, height= 0.51±0.16, lw_aspect= 2.16±0.56
-bicycle    n=20928, width= 0.63±0.24, len= 1.76±0.29, height= 1.44±0.37, lw_aspect= 3.20±1.17
-bus     n= 8729, width= 2.96±0.24, len=12.34±3.41, height= 3.44±0.31, lw_aspect= 4.17±1.10
-car    n=534911, width= 1.93±0.16, len= 4.76±0.53, height= 1.72±0.24, lw_aspect= 2.47±0.22
-emergency_vehicle   n= 132, width= 2.45±0.43, len= 6.52±1.44, height= 2.39±0.59, lw_aspect= 2.66±0.28
-motorcycle      n=  818, width= 0.96±0.20, len= 2.35±0.22, height= 1.59±0.16, lw_aspect= 2.53±0.50
-other_vehicle   n=33376, width= 2.79±0.30, len= 8.20±1.71, height= 3.23±0.50, lw_aspect= 2.93±0.53
-pedestrian  n=24935, width= 0.77±0.14, len= 0.81±0.17, height= 1.78±0.16, lw_aspect= 1.06±0.20
-truck   n=14164, width= 2.84±0.32, len=10.24±4.09, height= 3.44±0.62, lw_aspect= 3.56±1.25
+animal n=  186, width= 0.36±0.12, len= 0.73±0.19, height= 0.51±0.16, lw_aspect= 2.16±0.56
+bicycle n=20928, width= 0.63±0.24, len= 1.76±0.29, height= 1.44±0.37, lw_aspect= 3.20±1.17
+bus n= 8729, width= 2.96±0.24, len=12.34±3.41, height= 3.44±0.31, lw_aspect= 4.17±1.10
+car n=534911, width= 1.93±0.16, len= 4.76±0.53, height= 1.72±0.24, lw_aspect= 2.47±0.22
+emergency_vehicle n= 132, width= 2.45±0.43, len= 6.52±1.44, height= 2.39±0.59, lw_aspect= 2.66±0.28
+motorcycle n=818, width= 0.96±0.20, len= 2.35±0.22, height= 1.59±0.16, lw_aspect= 2.53±0.50
+other_vehicle n=33376, width= 2.79±0.30, len= 8.20±1.71, height= 3.23±0.50, lw_aspect= 2.93±0.53
+pedestrian n=24935, width= 0.77±0.14, len= 0.81±0.17, height= 1.78±0.16, lw_aspect= 1.06±0.20
+truck n=14164, width= 2.84±0.32, len=10.24±4.09, height= 3.44±0.62, lw_aspect= 3.56±1.25
 
-animal    n=  186
+animal   n=186
 bicycle    n=20928
-bus     n= 8729
+bus     n=8729
 car    n=534911
-emergency_vehicle   n= 132
-motorcycle      n=  818
+emergency_vehicle   n=132
+motorcycle      n=818
 other_vehicle   n=33376
 pedestrian  n=24935
 truck   n=14164
@@ -218,13 +188,39 @@ So, how are we gonna add lyft mAP in here?, simple we have raw detections, we al
 TODO:
 * create a desent train/val split. DONE
 * add lyft mAP evaluation code. DONE
+* understand the epoch-end log during training.
+* multi-sweep inference: DONE
+* try submitting with scr th: 0.5
+
+
+190k: CV: 0.704, LB: 0.09
+
+after 190k, added all classes in data sampler.
+remember: for given num of TPs, low FPs-> high precision -> high LB
 
 
 
 
 
 
-python /media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/second.pytorch/second/data/nusc_eval.py --gt_file_path="/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/train/gt_data_val.json" --pred_file_path="/home/ags/second_test/all.pp.lowa.config.4/results/step_140676/pred_data_val.json" --output_dir="/home/ags/second_test/all.pp.lowa.config.4/results/step_140676"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -262,8 +258,6 @@ the results_nusc.json contains val set predictions for all the sample_tokens, wi
 
   `python export_kitti.py nuscenes_gt_to_kitti --nusc_data_root data/nuscenes/v1.0-mini --nusc_kitti_dir data/nusc_kitti`
   `python export_kitti.py nuscenes_gt_to_kitti --nusc_data_root data/lyft/v1.0-mini --nusc_kitti_dir data/nusc_kitti --split mini_val`
-
-
 `python export_kitti.py nuscenes_gt_to_kitti --nusc_data_root data/lyft/lyft_trainval --nusc_kitti_dir data/nusc_kitti --nusc_version v1.0-trainval`
 
 python ./pytorch/train.py evaluate --config_path=./configs/nuscenes/all.fhd.config --model_dir=/home/ags/second_test/all_fhd_2/ --measure_time=True --batch_size=2
@@ -282,24 +276,6 @@ https://www.reddit.com/r/india/comments/d7b02t/finally_got_rid_of_dandruff_after
 
 https://github.com/traveller59/second.pytorch
 
-#how render_annotation works:
-
-* take ann_token, get ann record
-* get the corresponding sample record
-* make sure LIDAR_TOP is present
-* get the camera token in which the annotation is present
-* get LIDAR_TOP token
-* use get_sample_data to get lidar data path, boxes, and something called camera_intrinsic (?)
-* use LidarPointCloud to render lidar
-* An annotation can have multiple boxes? no, shouldn't have for loop for the single element present in the `boxes` list
-* box.render to render the box (gotta take a look at the Box class)
-* `view_points` function?, get the corners
-
-
-
-
-
-
 
 
 # Nuscenes dataset:
@@ -308,20 +284,13 @@ https://github.com/nutonomy/nuscenes-devkit
 
 In March 2019, we released the full nuScenes dataset with all 1,000 scenes. The full dataset includes approximately 1.4M camera images, 390k LIDAR sweeps, 1.4M RADAR sweeps and 1.4M object bounding boxes in 40k keyframes. Additional features (map layers, raw sensor data, etc.) will follow soon. We are also organizing the nuScenes 3D detection challenge as part of the Workshop on Autonomous Driving at CVPR 2019.
 
-
 * Concept of sweeps: the readme says sweeps have no annotations, which doesn't make sense to me as it looks like they indeed have it.
-
-
 
 
 ## Extras
 
 * gd in vim: go to definition
 * pdb `s` to step through code
-
-
-
-
 
 
 

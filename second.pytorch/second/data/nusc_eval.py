@@ -14,7 +14,7 @@ from lyft_dataset_sdk.eval.detection.mAP_evaluation import *
 #@jit(nopython=True)
 def get_ap(gt, predictions, class_names, iou_threshold, output_dir):
     ap = get_average_precisions(gt, predictions, class_names, iou_threshold)
-    metric = {c:ap[idx] for idx, c in enumerate(class_names)}
+    metric = {c:ap[idx] for idx, c in enumerate(sorted(class_names))}
     summary_path = output_dir / f'metric_summary_{iou_threshold}.json'
     with open(str(summary_path), 'w') as f:
         json.dump(metric, f)
@@ -48,7 +48,6 @@ def eval_main(gt_file_path, pred_file_path, output_dir):
 
 
     class_names = get_class_names(gt)
-    #print("Class_names = ", class_names)
     iou_th_range = np.linspace(0.5, 0.95, 10) # 0.5, 0.55, ..., 0.90, 0.95
 
     metric = {}
@@ -70,7 +69,8 @@ def eval_main(gt_file_path, pred_file_path, output_dir):
     #    print(name, AP)
 
     mAP = np.mean(overall_ap)
-    metric['overall'] = {'mAP': mAP}
+    metric['overall'] = {c: overall_ap[idx] for idx, c in enumerate(class_names)}
+    metric['mAP'] = mAP
     #print("Average per class mean average precision = ", mAP)
 
     summary_path = Path(output_dir) / 'metric_summary.json'
