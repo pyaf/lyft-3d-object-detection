@@ -1,0 +1,124 @@
+{
+    "0.5": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 0.5829922591237672,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "0.55": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 0.5534595952304382,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "0.6": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 0.5098211209302886,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "0.65": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 0.4397761336435785,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "0.7": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 0.33919406395623775,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "0.75": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 0.20334012309829685,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "0.8": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 0.08034683850517609,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "0.85": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 0.012864731928600163,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "0.8999999999999999": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 0.00028338326523741255,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "0.95": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 1.0723327726430359e-07,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "overall": {
+        "animal": 0.0,
+        "bicycle": 0.0,
+        "bus": 0.0,
+        "car": 0.27220783569148976,
+        "emergency_vehicle": 0.0,
+        "motorcycle": 0.0,
+        "other_vehicle": 0.0,
+        "pedestrian": 0.0,
+        "truck": 0.0
+    },
+    "mAP": 0.030245315076832195
+}

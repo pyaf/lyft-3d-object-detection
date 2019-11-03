@@ -53,6 +53,7 @@ def build(input_reader_config,
         raise ValueError('input_reader_config not of type '
                          'input_reader_pb2.InputReader.')
     prep_cfg = input_reader_config.preprocess
+    #import pdb; pdb.set_trace()
     dataset_cfg = input_reader_config.dataset
     num_point_features = model_config.num_point_features
     out_size_factor = get_downsample_factor(model_config)

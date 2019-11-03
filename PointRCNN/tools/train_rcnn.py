@@ -61,9 +61,11 @@ def create_logger(log_file):
 
 
 def create_dataloader(logger):
-    DATA_PATH = os.path.join('../', 'data')
+    #DATA_PATH = os.path.join('../', 'data')
+    DATA_PATH = '/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/KITTI/lyft/'
 
     # create dataloader
+    args.workers = 0
     train_set = KittiRCNNDataset(root_dir=DATA_PATH, npoints=cfg.RPN.NUM_POINTS, split=cfg.TRAIN.SPLIT, mode='TRAIN',
                                  logger=logger,
                                  classes=cfg.CLASSES,
@@ -198,7 +200,7 @@ if __name__ == "__main__":
     args.workers = 4
     # create dataloader & network & optimizer
     train_loader, test_loader = create_dataloader(logger)
-    pdb.set_trace()
+    #pdb.set_trace()
     model = PointRCNN(num_classes=train_loader.dataset.num_class, use_xyz=True, mode='TRAIN')
     optimizer = create_optimizer(model)
     if args.mgpus:

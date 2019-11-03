@@ -137,6 +137,7 @@ def prep_pointcloud(input_dict,
 
     """
     t = time.time()
+    #import pdb; pdb.set_trace()
     class_names = target_assigner.classes
     points = input_dict["lidar"]["points"]
     if training:
@@ -200,6 +201,7 @@ def prep_pointcloud(input_dict,
             keep_mask = np.logical_not(remove_mask)
             _dict_select(gt_dict, keep_mask)
         gt_dict.pop("difficulty")
+        #import pdb; pdb.set_trace()
         if min_points_in_gt > 0:
             # points_count_rbbox takes 10ms with 10 sweeps nuscenes data
             point_counts = box_np_ops.points_count_rbbox(points, gt_dict["gt_boxes"])

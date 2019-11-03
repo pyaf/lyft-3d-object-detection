@@ -288,6 +288,7 @@ def train(config_path,
     model_logging.open()
     model_logging.log_text(proto_str + "\n", 0, tag="config")
     start_step = net.get_global_step()
+    import pdb; pdb.set_trace()
     total_step = train_cfg.steps
     t = time.time()
     steps_per_eval = train_cfg.steps_per_eval
@@ -306,6 +307,7 @@ def train(config_path,
                 lr_scheduler.step(net.get_global_step())
                 time_metrics = example["metrics"]
                 example.pop("metrics")
+                #import pdb; pdb.set_trace()
                 example_torch = example_convert_to_torch(example, float_dtype)
 
                 batch_size = example["anchors"].shape[0]

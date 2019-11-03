@@ -118,12 +118,12 @@ class KittiRCNNDataset(KittiDataset):
                                                                  len(self.image_idx_list)))
 
     def get_label(self, idx):
-        if idx < 10000:
+        if idx < 10000 or True: # @ags
             label_file = os.path.join(self.label_dir, '%06d.txt' % idx)
         else:
             label_file = os.path.join(self.aug_label_dir, '%06d.txt' % idx)
 
-        assert os.path.exists(label_file)
+        assert os.path.exists(label_file), f'{label_file} does"t exist'
         return kitti_utils.get_objects_from_label(label_file)
 
     def get_image(self, idx):
@@ -251,7 +251,7 @@ class KittiRCNNDataset(KittiDataset):
         #pdb.set_trace()
 
         sample_id = int(self.sample_id_list[index])
-        if sample_id < 10000:
+        if sample_id < 10000 or True: # @ags
             calib = self.get_calib(sample_id)
             # img = self.get_image(sample_id)
             img_shape = self.get_image_shape(sample_id)

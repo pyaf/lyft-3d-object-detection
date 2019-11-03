@@ -10,7 +10,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--save_dir', type=str, default='./gt_database')
-parser.add_argument('--class_name', type=str, default='Car')
+parser.add_argument('--class_name', type=str, default='car')
 parser.add_argument('--split', type=str, default='train')
 args = parser.parse_args()
 
@@ -92,7 +92,7 @@ class GTDatabaseGenerator(KittiDataset):
 
 
 if __name__ == '__main__':
-    root_dir = '../data/'
+    root_dir = '/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/KITTI/lyft/'
     dataset = GTDatabaseGenerator(root_dir=root_dir, split=args.split)
     os.makedirs(args.save_dir, exist_ok=True)
 

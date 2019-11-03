@@ -185,7 +185,9 @@ class NuScenesDataset(Dataset):
             points_sweep[:, 4] = ts - sweep_ts
             sweep_points_list.append(points_sweep)
 
+        #import pdb; pdb.set_trace()
         points = np.concatenate(sweep_points_list, axis=0)[:, [0, 1, 2, 4]]
+        # points: before (62359, 4) -> (686172, 4)
 
         if read_test_image:
             if Path(info["cam_front_path"]).exists():
@@ -352,7 +354,12 @@ class NuScenesDataset(Dataset):
         cmd += f" --pred_file_path=\"{str(pred_file_path)}\""
         cmd += f" --output_dir=\"{output_dir}\""
         # use subprocess can release all nusc memory after evaluation
+        t0 = time.time()
         subprocess.check_output(cmd, shell=True)
+        diff = time.time() - t0
+        print("Total time taken : %02d:%02d" % (diff // 60, diff % 60))
+
+
 
 
     def evaluation_nusc_old(self, detections, output_dir):

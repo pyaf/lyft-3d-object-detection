@@ -3,9 +3,18 @@
 
 ## Approaches and Experiments:
 
+### To learn and implement:
+
 1. Run PointRCNN on nuscenes-mini, converted to kiiti.
 2. Run SECOND on nuscenes-mini: DONE
 3. Run SECOND on lyft. DONE
+4. Run frustum-convnet on kitti-formatted lyft.
+5.
+
+[SOTA for 3D obj det](https://paperswithcode.com/sota/3d-object-detection-on-kitti-cars-moderate)
+
+
+
 
 ## Notes:
 
@@ -14,13 +23,11 @@
 
 [x] apex support: it was useless warning, suppressed it. Now I can train at bs:8
 [x] mAP metric computation in eval.
-[] prediction with sweeps
+[x] prediction with sweeps
 [] with pretrained models? hmm, looks like it's working after 100 iters
 [x] understanding the evaluation metric
 [x] filter too-close predictions
 [x] good train/val split
-
-
 
 
 
@@ -41,6 +48,7 @@ https://github.com/traveller59/second.pytorch/issues/226
 
 * What about a kaggle kernel for Boxes only?
 * A kernel for evaluation metric?
+* For rare classes like animal and other_vehicle, what about training only on a subset of the dataset?
 
 
 ## Questions?
@@ -180,7 +188,7 @@ evan in train set model is completely failing to detect any animal or emergency 
 
 *NOTE* One thing to note is that so far the eval code is using offcial nuScenes evaluation metric, which is based on different distance thresholds. which has little sense for this competition which uses iou thresholds.
 
-*question* how's results.pkl different from results_nusc.json?
+*question* how's results.pkl different from results_nusc.json?: results.pkl: raw detections, results_nusc.json: boxes in global frame.
 
 results.pkl is raw detections (net(examples) generated during eval process, while results_nusc.json contains same detections in global frame.
 So, how are we gonna add lyft mAP in here?, simple we have raw detections, we already have the pipeline to get them to global frame, save them in lyft mAP required json format, for ground truth we have val_info.pkl, save it as required by lyft mAP algo. NO: val_info.pkl does contain gt_boxes but in lidar's frame
@@ -190,7 +198,7 @@ TODO:
 * add lyft mAP evaluation code. DONE
 * understand the epoch-end log during training.
 * multi-sweep inference: DONE
-* try submitting with scr th: 0.5
+* try submitting with scr th: 0.5: DONE 0.3 gives low score.
 
 
 190k: CV: 0.704, LB: 0.09
@@ -199,20 +207,39 @@ after 190k, added all classes in data sampler.
 remember: for given num of TPs, low FPs-> high precision -> high LB
 
 
+### 4 Oct
+http://www.cvlibs.net/datasets/kitti/eval_tracking.php : KITTI Benchmark, many open source code can be found here
+
+*IDEA*:
+
+What about pretraining on the full Nuscenes dataset?
+I'm downloading lidar-only dataset from nuscenes, will account for atleast 130 GB.
+
+Nuscenes already has 6 out of 9 classes of lyft. [doesn't have explicit "other_vehicle", emergency_vehicle and animal]
+We can put its trailer and construction vehicle into other_vehicle category. As far as emergency vehicle and animal is concerned, there are mere 100 instances in lyft.
+I'll download the dataset tonight, extract it. Free some space from internal disk. Transfer zip files to external drive.
+Will be leaving for home tommorow, dussehra vacations. Will be back on wednesday.
+
+
+### 12 Oct (Sat)
+
+Thurs and Friday: no significant work.
+
+I'm converting all of lyft dataset to KITTI format, with boxes in all directions. [code](https://github.com/stalkermustang/nuscenes-devkit)
+
+
+python export_kitti.py nuscenes_gt_to_kitti --lyft_dataroot /media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/train/ --table_folder /media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/lyft/train/data/ --parallel_n_jobs 10 --get_all_detections True --store_dir /media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data/KITTI/lyft/training/ --samples_count 10
 
 
 
+### 13 Oct
+
+Gotta train pp multi-head in background, meanwhile I'll read the point pillars paper today.
 
 
+NOTE: target_assigner.classes are the order in which we have defined the class anchor props in config file.
 
-
-
-
-
-
-
-
-
+python -W ignore ./pytorch/train.py train --config_path=./configs/nuscenes/all.pp.lowa.config.17 --model_dir=/home/ags/second_test/all.pp.lowa.config.4
 
 
 
@@ -237,7 +264,7 @@ remember: for given num of TPs, low FPs-> high precision -> high LB
 
 the results_nusc.json contains val set predictions for all the sample_tokens, with boxes in global FoR, but this file is deleted (data/nuscene_dataset.py, L407) after evaluation, because of its large size (~300 MB)
 
-
+* We use such a high IoU threshold in NMS because we are not 100% perfect in predicting boxes for a nearby object we may have a prediction having an overlap with the another prediction.
 
 
 
@@ -278,13 +305,50 @@ https://github.com/traveller59/second.pytorch
 
 
 
-# Nuscenes dataset:
+# Dataset:
 
+### NuScenes:
 https://github.com/nutonomy/nuscenes-devkit
 
 In March 2019, we released the full nuScenes dataset with all 1,000 scenes. The full dataset includes approximately 1.4M camera images, 390k LIDAR sweeps, 1.4M RADAR sweeps and 1.4M object bounding boxes in 40k keyframes. Additional features (map layers, raw sensor data, etc.) will follow soon. We are also organizing the nuScenes 3D detection challenge as part of the Workshop on Autonomous Driving at CVPR 2019.
 
 * Concept of sweeps: the readme says sweeps have no annotations, which doesn't make sense to me as it looks like they indeed have it.
+
+
+### KITTI:
+    * In z-direction, the object coordinate system is located at the bottom of the object (contact point with the supporting surface).
+    * x-length-front, y-width-left, z-height-up.
+
+
+### nuscenes
+    * lidar's frame: x-right, y-front, z-up
+    * 90 degrees clockwise to kitti lidar frame, that's why
+
+
+
+### Translations:
+
+ego_pose:
+    * position and rotation of ego vehicle in global coordinate system.
+    * schema:
+        "translation":             <float> [3] -- Coordinate system origin in meters: x, y, z. Note that z is always 0.
+        "rotation":                <float> [4] -- Coordinate system orientation as quaternion: w, x, y, z.
+    * the transformation you need to make in order to bring a point in global coordinate to ego vehicle's frame of reference.
+
+*question*, is ego_pose_token for all sensors on a ego vehicle same? technically it should be.
+sensor_calibration:
+    * schema
+       "translation":             <float> [3] -- Coordinate system origin in meters: x, y, z.
+       "rotation":                <float> [4] -- Coordinate system orientation as quaternion: w, x, y, z.
+       "camera_intrinsic":        <float> [3, 3] -- Intrinsic camera calibration. Empty for sensors that are not
+
+    * the tranformation you need to make in order to bring a point in ego vehicle's frame of reference to sensor's frame of reference.
+    *
+sample_annotation
+
+   "translation":             <float> [3] -- Bounding box location in meters as center_x, center_y, center_z.
+   "size":                    <float> [3] -- Bounding box size in meters as width, length, height.
+   "rotation":                <float> [4] -- Bounding box orientation as quaternion: w, x, y, z.
 
 
 ## Extras
@@ -318,7 +382,7 @@ split can be train/val/
 * so we should have all labelled data in `training`, prepare a val.txt
 * 100000 - 120000 points in lidar cloud in org kitti dataset.: NUM_POINTS: 17000: ~20%
 * ~34700 in nuscenes mini
-* 67409 in lyft
+* 67409 in lyft -> 10000
 * np.fromfile, arg dtype is v.v. imp
 *
 Currently, the two stages of PointRCNN are trained separately.
@@ -332,7 +396,7 @@ gt_database/train_gt_database_3level_car.pkl file generated
 python train_rcnn.py --cfg_file cfgs/nuscene_mini.yaml --batch_size 16 --train_mode rpn --epochs 200
 
 
-* What's the number of classes in org KITTI dataset?
+* What's the number of classes in org KITTI dataset? not much, the kitti benchmark is seperate for each class so people don't care about overall mAP here
 
 
 python train_rcnn.py --cfg_file cfgs/nuscene_mini.yaml --batch_size 4 --train_mode rcnn --epochs 70  --ckpt_save_interval 2 --rpn_ckpt ../output/rpn/nuscene_mini/ckpt/checkpoint_epoch_200.pth --train_with_eval True
@@ -345,48 +409,18 @@ python eval_rcnn.py --cfg_file cfgs/nuscene_mini.yaml --ckpt  ../output/rcnn/nus
 
 https://medium.com/the-artificial-impostor/use-nvidia-apex-for-easy-mixed-precision-training-in-pytorch-46841c6eed8c
 
+python train_rcnn.py --cfg_file cfgs/lyft_13_test.yaml --batch_size 16 --train_mode rpn --epochs 200
 
-* KITTI:
-    * In z-direction, the object coordinate system is located at the bottom of the object (contact point with the supporting surface).
-    * x-length-front, y-width-left, z-height-up.
-    *
+## 13 oct
 
-
+`lyft_13_test.yaml`: converted lyft-> kitti using stalker's script. Training on num_points 7000
 
 
 
+python eval.py --det_file /home/ags/second_test/all.pp.lowa.config.4/detections/voxelnet-313529_train.pkl  --phase train
 
 
 
-
-
-
-
-
-
-## Translations:
-
-ego_pose:
-    * position and rotation of ego vehicle in global coordinate system.
-    * schema:
-        "translation":             <float> [3] -- Coordinate system origin in meters: x, y, z. Note that z is always 0.
-        "rotation":                <float> [4] -- Coordinate system orientation as quaternion: w, x, y, z.
-    * the transformation you need to make in order to bring a point in global coordinate to ego vehicle's frame of reference.
-
-*question*, is ego_pose_token for all sensors on a ego vehicle same? technically it should be.
-sensor_calibration:
-    * schema
-       "translation":             <float> [3] -- Coordinate system origin in meters: x, y, z.
-       "rotation":                <float> [4] -- Coordinate system orientation as quaternion: w, x, y, z.
-       "camera_intrinsic":        <float> [3, 3] -- Intrinsic camera calibration. Empty for sensors that are not
-
-    * the tranformation you need to make in order to bring a point in ego vehicle's frame of reference to sensor's frame of reference.
-    *
-sample_annotation
-
-   "translation":             <float> [3] -- Bounding box location in meters as center_x, center_y, center_z.
-   "size":                    <float> [3] -- Bounding box size in meters as width, length, height.
-   "rotation":                <float> [4] -- Bounding box orientation as quaternion: w, x, y, z.
 
 kittiviewer:
 
@@ -418,3 +452,75 @@ NuScenesDataset
 
 
 Cuda error in file '/home/ags/sw/spconv/src/cuhash/hash_table.cpp' in line 123 : an illegal memory access was encountered.
+
+
+## Creating lyft mini dataset
+
+* NuScenes mini:
+    Loading NuScenes tables for version v1.0-mini...
+    23 category,
+    8 attribute,
+    4 visibility,
+    911 instance,
+    12 sensor,
+    120 calibrated_sensor,
+    31206 ego_pose,
+    8 log,
+    10 scene,
+    404 sample,
+    31206 sample_data,
+    18538 sample_annotation,
+    4 map,
+
+* lyft overall:
+    9 category,
+    18 attribute,
+    4 visibility,
+    18421 instance,
+    10 sensor,
+    148 calibrated_sensor,
+    177789 ego_pose,
+    180 log,
+    180 scene,
+    22680 sample,
+    189504 sample_data,
+    638179 sample_annotation,
+    1 map,
+
+* expected lyft mini
+
+    9 category,
+
+
+fuck this shit.
+
+
+
+## Questions:
+
+1. a Box is defined by center (translation) and size (wlh), then where does the quaternion (rotation) come into the picture, only during plotting?
+2.
+
+
+
+
+
+
+## Data directory:
+
+/media/ags/DATA/CODE/kaggle/lyft-3d-object-detection/data
+
+data
+---- KITTI
+    ---- KITTI
+    ---- lyft
+        ---- ImageSets
+            ---- trainval.txt
+            ---- train.txt
+            ---- val.txt
+        ---- object
+            ---- calib
+            ---- label_2
+            ---- image_2
+    ---- nuscenes
+    ---- test

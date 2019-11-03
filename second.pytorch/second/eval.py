@@ -1,3 +1,7 @@
+'''
+This script takes in raw detections (net() outputs, in lidar frame) [use submission.ipynb] and ground truth boxes global frame to calculate lyft's mAP metric
+'''
+
 import time
 import pickle
 from math import cos, sin, pi
@@ -121,6 +125,7 @@ def main(det_file, phase='train'):
             'emergency_vehicle', 'other_vehicle',
             'motorcycle', 'pedestrian', 'truck']
     # order is imp., raw detections' labels are indices acc to above list
+    # order is dicided by the order of class definitions in config file
 
     threshold = 0.2
     pboxes = []
@@ -133,6 +138,8 @@ def main(det_file, phase='train'):
 
     del detections
 
+    classes = list(sorted(classes)) # now classes can be sorted.
+
     print('Done')
     print('Starting mAP computation..')
     # now we have all serialized pred boxes in pboxes and gt boxes in gboxes
@@ -141,7 +148,7 @@ def main(det_file, phase='train'):
     def process_range(start, end):
         processes = []
         for iou_threshold in iou_th_range[start:end]:
-            process = Process(target=get_ap,
+            process = Process(target=save_ap,
                     args=(gboxes, pboxes, classes, iou_threshold, output_dir))
             process.start()
             processes.append(process)
@@ -150,9 +157,9 @@ def main(det_file, phase='train'):
             process.join()
 
     if phase == 'train':
-        process_range(0, 5)
-        print('got half way through,..')
-        process_range(5, 10)
+        process_range(0, 10)
+        #print('got half way through,..')
+        #process_range(5, 10)
     else:
         process_range(0, 10)
 
@@ -162,7 +169,7 @@ def main(det_file, phase='train'):
     metric['overall'] = {c: overall_ap[idx] for idx, c in enumerate(classes)}
     metric['mAP'] = mAP
 
-    summary_path = output_dir / f'(det_file.name).json'
+    summary_path = output_dir / f'{det_file.name}.json'
     with open(str(summary_path), 'w') as f:
         json.dump(metric, f, indent=4)
 
@@ -178,6 +185,6 @@ if __name__ == "__main__":
 
 '''
 
- python eval.py --det_file /home/ags/second_test/all.pp.lowa.config.4/detections/voxelnet-313529_train.pkl --phase train
+ python eval.py --det_file /home/ags/second_test/all.pp.mhead.config.13/detections/voxelnet-58650_val.pkl --phase val
 
 '''
